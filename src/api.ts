@@ -3,7 +3,7 @@
 // One place, so a change to the API surface has one place to land, and so the
 // tests can exercise the client without a DOM.
 
-import type { ReadingPage, Sensor } from "./types";
+import type { ReadingPage, Sensor, SensorSummary } from "./types";
 
 const BASE = "/api/v1";
 
@@ -21,4 +21,8 @@ export function fetchSensors(): Promise<Sensor[]> {
 
 export function fetchReadings(sensorId: string, limit = 24): Promise<ReadingPage> {
   return getJson<ReadingPage>(`/sensors/${sensorId}/readings?limit=${limit}`);
+}
+
+export function fetchSensorSummary(sensorId: string): Promise<SensorSummary> {
+  return getJson<SensorSummary>(`/sensors/${sensorId}/summary`);
 }
