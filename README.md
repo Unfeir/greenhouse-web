@@ -17,8 +17,13 @@ The test suite covers the API layer only — no DOM, no rendering. A wrong contr
 should be the interesting way to be red here; a rendering harness would add
 several uninteresting ones.
 
+The lock file is committed. Without it `npm install` generates one on first
+use, and an agent asked to touch `src` alone reaches for `.gitignore` to keep it
+out of the diff — which is a sensible instinct and an out-of-scope edit, and it
+failed a verdict here before the lock file was added.
+
 ```
-npm install
+npm ci
 npm run typecheck
 npm test
 ```

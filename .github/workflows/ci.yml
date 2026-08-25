@@ -5,7 +5,25 @@ on:
     branches: [main]
   pull_request:
 
+# Two jobs rather than one, so each shows up as its own check.
+#
+# They were one job named `test`, and a judge reading the pull request said so:
+# the diff looked valid, but the only evidence was `test: passed`, which does not
+# demonstrate that a type-check ran. It marked the criterion `unknown` and it was
+# right to. A check that bundles three steps under one name can only answer
+# "something passed".
 jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+
   test:
     runs-on: ubuntu-latest
     steps:
@@ -13,6 +31,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - run: npm install
-      - run: npm run typecheck
+          cache: npm
+      - run: npm ci
       - run: npm test
