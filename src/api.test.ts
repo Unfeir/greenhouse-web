@@ -6,7 +6,7 @@
 // nobody is asking about.
 
 import { afterEach, expect, test, vi } from "vitest";
-import { fetchReadings, fetchSensors } from "./api";
+import { fetchReadings, fetchSensors, fetchSensorSummary } from "./api";
 
 function respondWith(body: unknown): void {
   vi.stubGlobal(
@@ -44,4 +44,34 @@ test("a failed request is an error rather than an empty page", async () => {
   );
 
   await expect(fetchReadings("nope")).rejects.toThrow("404");
+});
+
+test("a summary comes back with its figures", async () => {
+  respondWith({ sensor_id: "s-1", average: 21.5, minimum: 18, maximum: 25, count: 3 });
+
+  const summary = await fetchSensorSummary("s-1");
+
+  expect(summary.sensor_id).toBe("s-1");
+  expect(summary.average).toBe(21.5);
+  expect(summary.count).toBe(3);
+});
+
+test("a summary with no readings has null figures and a zero count", async () => {
+  respondWith({ sensor_id: "s-1", average: null, minimum: null, maximum: null, count: 0 });
+
+  const summary = await fetchSensorSummary("s-1");
+
+  expect(summary.average).toBeNull();
+  expect(summary.minimum).toBeNull();
+  expect(summary.maximum).toBeNull();
+  expect(summary.count).toBe(0);
+});
+
+test("a summary request for an unknown sensor is an error", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => ({ ok: false, status: 404, json: async () => ({}) })),
+  );
+
+  await expect(fetchSensorSummary("nope")).rejects.toThrow("404");
 });

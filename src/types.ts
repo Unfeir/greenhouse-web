@@ -23,3 +23,11 @@ export interface ReadingPage {
   readings: Reading[];
   next_cursor: string | null;
 }
+
+export interface SensorSummary {
+  sensor_id: string;
+  average: number | null;
+  minimum: number | null;
+  maximum: number | null;
+  count: number;
+}
