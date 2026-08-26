@@ -6,7 +6,7 @@
 // nobody is asking about.
 
 import { afterEach, expect, test, vi } from "vitest";
-import { fetchReadings, fetchSensors } from "./api";
+import { fetchReadings, fetchSensors, fetchStats } from "./api";
 
 function respondWith(body: unknown): void {
   vi.stubGlobal(
@@ -44,4 +44,54 @@ test("a failed request is an error rather than an empty page", async () => {
   );
 
   await expect(fetchReadings("nope")).rejects.toThrow("404");
+});
+
+test("stats are requested at the sensor's stats path", async () => {
+  const fetchMock = vi.fn(async () => ({
+    ok: true,
+    json: async () => ({
+      sensor_id: "s-1",
+      mean_celsius: "18.5",
+      low_celsius: "17.0",
+      high_celsius: "20.1",
+      n_readings: 12,
+    }),
+  }));
+  vi.stubGlobal("fetch", fetchMock);
+
+  await fetchStats("s-1");
+
+  expect(fetchMock).toHaveBeenCalledWith("/api/v1/sensors/s-1/stats");
+});
+
+test("a well-formed stats response is parsed through unchanged", async () => {
+  respondWith({
+    sensor_id: "s-1",
+    mean_celsius: "18.5",
+    low_celsius: "17.0",
+    high_celsius: "20.1",
+    n_readings: 12,
+  });
+
+  const stats = await fetchStats("s-1");
+
+  expect(stats).toEqual({
+    sensor_id: "s-1",
+    mean_celsius: "18.5",
+    low_celsius: "17.0",
+    high_celsius: "20.1",
+    n_readings: 12,
+  });
+  expect(typeof stats.mean_celsius).toBe("string");
+  expect(typeof stats.low_celsius).toBe("string");
+  expect(typeof stats.high_celsius).toBe("string");
+});
+
+test("a failed stats request is an error rather than an empty result", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => ({ ok: false, status: 500, json: async () => ({}) })),
+  );
+
+  await expect(fetchStats("s-1")).rejects.toThrow("500");
 });
