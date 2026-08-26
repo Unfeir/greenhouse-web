@@ -23,3 +23,11 @@ export interface ReadingPage {
   readings: Reading[];
   next_cursor: string | null;
 }
+
+export interface SensorStats {
+  sensor_id: string;
+  mean_celsius: string;
+  low_celsius: string;
+  high_celsius: string;
+  n_readings: number;
+}
